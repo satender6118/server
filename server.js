@@ -1,32 +1,38 @@
-const express = require("express");
-const http = require("http");
+const express = require('express');
+const app = express();
+const http = require('http');
+const { disconnect } = require('process');
+const server = http.createServer(app);
 const { Server } = require("socket.io");
 
-const app = express();
-const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: "*",
-    credentials: true,
-  },
+    methods: ["GET", "POST"]
+  }
 });
 
-// Handle WebSocket connections here
-io.on("connection", (socket) => {
-  console.log("A new user has connected", socket.id);
 
-  // Listen for incoming messages from clients
-  socket.on("message", (message) => {
-    // Broadcast the message to all connected clients
-    io.emit("message", message);
+app.get('/', (req, res) => { 
+  res.send("Chat App Server ...")
   });
 
-  // Handle disconnections
-  socket.on("disconnect", () => {
-    console.log(socket.id, " disconnected");
-  });
-});
+
+io.on('connection', (socket)=>{
+    console.log('a user connected');
+
+    socket.on('message',(msg)=>{
+        console.log('message : ' + msg);
+        io.emit('message', msg);
+    })
+
+    
+    socket.on('disconnect',()=>{
+    console.log('user disconnected')
+    })
+})
 
 server.listen(3000, () => {
-  console.log("Server is running on port 3000");
+  console.log('listening on http://localhost:3000/');
 });
